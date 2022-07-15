@@ -4,7 +4,8 @@ body {
 
 #app {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
   width: 100%;
 }
 
@@ -18,4 +19,5 @@ body {
   max-width: 300px;
   width: 100%;
   border: 1px solid green;
+  margin-right: 20px;
 }

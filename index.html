@@ -35,7 +35,7 @@
       </ul>
 
       <div>
-        <p v-for='variant in variants'>{{ variant.variantColor }}</p>
+        <p v-for='variant in variants' v-bind="variant.variantId">{{ variant.variantColor }}</p>
       </div>
 
     </div>
