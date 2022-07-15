@@ -13,7 +13,7 @@ var app = new Vue({
       {
         variantId: 124,
         variantColor: 'green',
-      }, 
+      },
       {
         variantId: 125,
         variantColor: 'blue',
