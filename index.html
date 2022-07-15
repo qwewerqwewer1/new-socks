@@ -16,21 +16,33 @@
   <div id="app">
 
     <div class='product-image-container'>
-      <img class='product-image' v-bind:src='image' v-bind:alt='altText'/>
+      <img class='product-image' v-bind:src='image' v-bind:alt='altText' />
     </div>
 
     <div class='product-info'>
       <h1>{{ product }}</h1>
       <p>{{ description }}</p>
+
       <a v-bind:href='link'>Больше носочков</a>
-      <p v-if='inStock'>in stock</p>
-      <p v-else>out of stock</p>
+
+      <p v-if='inStock > 10'>Еще много</p>
+      <p v-else-if='11 > inStock && inStock > 0'>Заканчиваются</p>
+      <p v-else>Закончились</p>
+
+      <p>{{onSale ? 'в продаже' : 'продажа приостановлена'}}</p>
+
+      <ul>
+        <li v-for='detail in details'>{{ detail }}</li>
+      </ul>
+
+      <div>
+        <p v-for='variant in variants'>{{ variant.variantColor }}</p>
+      </div>
+
     </div>
 
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
-  <script src="./index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+    <script src="./index.js"></script>
 </body>
 
 </html>
