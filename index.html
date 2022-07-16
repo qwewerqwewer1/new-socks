@@ -11,8 +11,8 @@
 <body>
   <!--Шапка-->
   <div class="nav-bar"></div>
-  <!--Корневая папка el: '#app'--->
-  <div id="app">
+  <!--Корневая папка el: '#app'-  -->
+  <div id="app" @keyup.enter="console.log(1)">
 
     <div class='product-image-container'>
       <img class='product-image' v-bind:src='image' v-bind:alt='altText' />
@@ -26,22 +26,36 @@
 
       <p v-if='inStock > 10'>Еще много</p>
       <p v-else-if='11 > inStock && inStock > 0'>Заканчиваются</p>
-      <p v-else>Закончились</p>
+      <p :class="{textDecor: !inStock}"v-else>Закончились</p>
 
       <p>{{onSale ? 'в продаже' : 'продажа приостановлена'}}</p>
 
       <ul>
         <li v-for='detail in details'>{{ detail }}</li>
       </ul>
+        
+      <p>Размеры</p>
+      <ul>
+        <li v-for='size in sizes'>{{ size }}</li>
+      </ul>
 
-      <div>
-        <p v-for='variant in variants' v-bind="variant.variantId">{{ variant.variantColor }}</p>
+      <div v-for='variant in variants' 
+      v-bind:key="variant.variantId" class='color_box' 
+      v-bind:style='{backgroundColor: variant.variantColor}'
+      @mouseover="updateImage(variant.variantImage)">
       </div>
 
+      <div>
+        <button @click="addToCart" :disabled="inStock == false
+        ">Добавить в корзину</button>
+        <button @click="removeFromCart" :disabled="cart == 0">Убрать из корзины</button>
+        <div>Cart({{cart}})</div>
+      </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
-    <script src="./index.js"></script>
+  </div>
+    
 </body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+<script src="./index.js"></script>
 
 </html>
