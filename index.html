@@ -39,10 +39,10 @@
         <li v-for='size in sizes'>{{ size }}</li>
       </ul>
 
-      <div v-for='variant in variants' 
+      <div v-for='(variant, i) in variants' 
       v-bind:key="variant.variantId" class='color_box' 
       v-bind:style='{backgroundColor: variant.variantColor}'
-      @mouseover="updateImage(variant.variantImage)">
+      @mouseover="updateProduct(i)">
       </div>
 
       <div>
