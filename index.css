@@ -96,6 +96,10 @@ body {
   margin: 26px 89px;
 }
 
+.review-form {
+  width: 1px;
+}
+
 @keyframes example {
   0% {
     transform: rotate(0deg);

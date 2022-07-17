@@ -1,22 +1,12 @@
-Vue.component('product-details', {
-  props: {
-    details: {
-      type: Array,
-      required: true,
-    }
-  },
-  template: `
-  <ul>
-    <li v-for='detail in details'>{{ detail }}</li>
-  </ul>
-  `,
-})
-
 Vue.component("product", {
   props: {
     premium: {
       required: true,
       type: Boolean,
+    },
+    cart: {
+      required: true,
+      type: Array,
     }
   },
   template: `
@@ -37,7 +27,6 @@ Vue.component("product", {
         <div class="btn_container">
           <button class='btn' :class='{offBtn: !inStock}' @click="addToCart" :disabled="inStock == false">Добавить в корзину</button>
           <button class='btn' :class='{offBtn: !cart}' @click="removeFromCart" :disabled="cart == 0">Убрать из корзины</button>
-          <div class="cart">Количество: {{cart}}</div>
         </div>
         
       </div>
@@ -65,6 +54,19 @@ Vue.component("product", {
 
         <product-details :details="details"></product-details>
 
+        <div>
+          <h2>Пожелания</h2>
+          <p v-if='!reviews.length'>Пожелания отсутствуют</p>
+          <ul>
+            <li v-for='review in reviews'>
+              <p>Имя: {{ review.name }}</p>
+              <p>Отзыв: {{ review.review }}</p>
+              <p>Оценка:{{ review.rating }}</p>
+            </li>
+          </ul>
+        </div>
+
+        <product-review class='product-review' @review-submitted='addReview'></product-review>
       </div>
 
     </div>
@@ -76,7 +78,7 @@ Vue.component("product", {
       link: "https://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=socks",
       description: "Пара теплых пушистых носков",
       altText: "Пара носков",
-      product: "Вонючие носки Глеба",
+      product: "Вонючие Носки Вити",
       sizes: [34, 37, 40],
       selectedVariant: 0,
       onSale: true,
@@ -93,23 +95,26 @@ Vue.component("product", {
           variantColor: "blue",
           variantImage:
             "https://www.vuemastery.com/images/challenges/vmSocks-blue-onWhite.jpg",
-          variantQuantity: 0,
+          variantQuantity: 2,
         },
       ],
-      cart: 0,
       details: ["80% хлопок", "20 полиэстер", "одинаковые"],
+      reviews: [],
     }
   },
   methods: {
     addToCart() {
-      this.cart++;
+      this.$emit('add-to-cart', this.variants[this.selectedVariant].variantId);
     },
     removeFromCart() {
-      this.cart--;
+      this.$emit('remove-from-cart', this.variants[this.selectedVariant].variantId);
     },
     updateProduct(i) {
       this.selectedVariant = i;
     },
+    addReview(productReview) {
+      this.reviews.push(productReview)
+    }
   },
   computed: {
     image() {
@@ -127,9 +132,97 @@ Vue.component("product", {
   },
 });
 
+Vue.component('product-details', {
+  props: {
+    details: {
+      type: Array,
+      required: true,
+    }
+  },
+  template: `
+  <ul>
+    <li v-for='detail in details'>{{ detail }}</li>
+  </ul>
+  `,
+})
+
+Vue.component('product-review', {
+  template: `
+    <form class='review-form' @submit.prevent='onSubmit'>
+      <p>
+        <label for='name'>Имя: </label>
+        <input maxlength='10' id='name' v-model='name' placeholder='name'/>
+      </p>
+      <p>
+        <label for='review'>Отзыв: </label>
+        <textarea cols='19' rows='5' maxlength='80' id='review' v-model='review'></textarea>
+      </p>
+      <p>
+        <label for="rating">Оценка: </label>
+        <select id="rating" v-model.number="rating">
+          <option>5</option>
+          <option>4</option>
+          <option>3</option>
+          <option>2</option>
+          <option>1</option>
+        </select>
+      </p>
+
+      <p>
+        <input type='submit' value='Submit'>
+      </p>
+    </form>
+  `,
+  data() {
+    return {
+      name: null,
+      review: null,
+      rating: null,
+      errors: [],
+    }
+  },
+  methods: {
+    onSubmit() {
+      if (this.name && this.review && this.rating) {
+        let productReviews = {
+          name: this.name,
+          review: this.review,
+          rating: this.rating,
+        }
+        this.$emit('review-submitted', productReviews)
+      } else {
+        if (!this.name) this.error.push('Введи имя босоножка =)')
+        if (!this.review) this.error.push('Введите отзыв!')
+        if (!this.rating) this.error.push('Рейтинг, ну как же без него :)')
+      }
+      this.name = null
+      this.review = null
+      this.rating = null
+    }
+  },
+})
+
 var app = new Vue({
   el: "#app",
   data: {
     premium: true,
+    cart: [],
+  },
+  methods: {
+    updateCart(idCart) {
+      this.cart.push(idCart)
+      console.log(this.cart)
+    },
+    downgradeCart(idCart) {
+      for (let i = this.cart.length - 1; i >= 0; i--) {
+        if (this.cart[i] === idCart) {
+           this.cart.splice(i, 1);
+           return
+        }
+      }
+    }
+  },
+  computed: {
+
   }
 });
