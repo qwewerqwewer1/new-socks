@@ -13,6 +13,7 @@
   <!--Корневая папка el: '#app'-  -->
   <div id="app">
     <product :premium="premium" :cart="cart" @add-to-cart="updateCart" @remove-from-cart="downgradeCart"></product>
+    <!-- <product :premium="premium" :cart="cart" @add-to-cart="updateCart" @remove-from-cart="downgradeCart"></product> -->
     <div class="cart">Количество: {{ cart.length }}</div>
   </div>
     

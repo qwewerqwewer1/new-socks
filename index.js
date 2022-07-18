@@ -1,3 +1,5 @@
+var eventBus = new Vue()
+
 Vue.component("product", {
   props: {
     premium: {
@@ -26,7 +28,7 @@ Vue.component("product", {
 
         <div class="btn_container">
           <button class='btn' :class='{offBtn: !inStock}' @click="addToCart" :disabled="inStock == false">Добавить в корзину</button>
-          <button class='btn' :class='{offBtn: !cart}' @click="removeFromCart" :disabled="cart == 0">Убрать из корзины</button>
+          <button class='btn' :class='{offBtn: cart == 0}' @click="removeFromCart" :disabled="cart == 0">Убрать из корзины</button>
         </div>
         
       </div>
@@ -52,25 +54,16 @@ Vue.component("product", {
           <li class='size' v-for='size in sizes'>{{ size }}</li>
         </ul>
 
-        <product-details :details="details"></product-details>
+        <ul>
+          <li v-for='detail in details'>{{ detail }}</li>
+        </ul>
 
-        <div>
-          <h2>Пожелания</h2>
-          <p v-if='!reviews.length'>Пожелания отсутствуют</p>
-          <ul>
-            <li v-for='review in reviews'>
-              <p>Имя: {{ review.name }}</p>
-              <p>Отзыв: {{ review.review }}</p>
-              <p>Оценка:{{ review.rating }}</p>
-            </li>
-          </ul>
-        </div>
-
-        <product-review class='product-review' @review-submitted='addReview'></product-review>
       </div>
 
+      <product-tabs :reviews='reviews'></product-tabs>
+
     </div>
-  
+    
   </div>
   `,
   data() {
@@ -78,7 +71,7 @@ Vue.component("product", {
       link: "https://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=socks",
       description: "Пара теплых пушистых носков",
       altText: "Пара носков",
-      product: "Вонючие Носки Вити",
+      product: "Носки",
       sizes: [34, 37, 40],
       selectedVariant: 0,
       onSale: true,
@@ -87,14 +80,14 @@ Vue.component("product", {
           variantId: 124,
           variantColor: "green",
           variantImage:
-            "https://www.vuemastery.com/images/challenges/vmSocks-green-onWhite.jpg",
+            "./img/green-socks.jpg",
           variantQuantity: 9,
         },
         {
           variantId: 125,
           variantColor: "blue",
           variantImage:
-            "https://www.vuemastery.com/images/challenges/vmSocks-blue-onWhite.jpg",
+            "./img/blue-socks.jpg",
           variantQuantity: 2,
         },
       ],
@@ -112,9 +105,6 @@ Vue.component("product", {
     updateProduct(i) {
       this.selectedVariant = i;
     },
-    addReview(productReview) {
-      this.reviews.push(productReview)
-    }
   },
   computed: {
     image() {
@@ -130,20 +120,52 @@ Vue.component("product", {
       return '150р'
     }
   },
+  mounted() {
+    eventBus.$on('review-submitted', function (productReview) {
+      this.reviews.push(productReview)
+    }.bind(this))
+  },
 });
 
-Vue.component('product-details', {
+
+Vue.component('product-tabs', {
   props: {
-    details: {
+    reviews: {
       type: Array,
-      required: true,
+      required: false,
     }
   },
   template: `
-  <ul>
-    <li v-for='detail in details'>{{ detail }}</li>
-  </ul>
+  <div>
+    <span class='tabs' :class='{activeTab: selectedTab === tab}'
+      v-for="(tab, index) in tabs" :key='index'
+      @click='selectedTab = tab'>
+        {{ tab }}
+      </span>
+
+      <div v-show="selectedTab === 'Отзывы'">
+          <p v-if='!reviews.length'>Пожелания отсутствуют</p>
+          <ul>
+
+            <li v-for='review in reviews'>
+              <p>Имя: {{ review.name }}</p>
+              <p>Отзыв: {{ review.review }}</p>
+              <p>Оценка: {{ review.rating }}</p>
+              <p>Рекомендация: {{ review.rec ? 'Да' : 'Нет' }}</p>
+            </li>
+
+          </ul>
+        </div>
+
+        <product-review v-show='selectedTab === "Оставить отзыв"'></product-review>
+  </div>
   `,
+  data() {
+    return {
+      tabs: ['Отзывы', 'Оставить отзыв'],
+      selectedTab: 'Отзывы',
+    }
+  },
 })
 
 Vue.component('product-review', {
@@ -167,6 +189,11 @@ Vue.component('product-review', {
           <option>1</option>
         </select>
       </p>
+        
+      <p>
+        <label for='rec'>Вы бы порекомендовали этот товар?</label>
+        <input type='checkbox' id='rec' v-model='rec'/>
+      </p>
 
       <p>
         <input type='submit' value='Submit'>
@@ -178,22 +205,24 @@ Vue.component('product-review', {
       name: null,
       review: null,
       rating: null,
+      rec: false,
       errors: [],
     }
   },
   methods: {
     onSubmit() {
       if (this.name && this.review && this.rating) {
-        let productReviews = {
+        let productReview = {
           name: this.name,
           review: this.review,
           rating: this.rating,
+          rec: this.rec,
         }
-        this.$emit('review-submitted', productReviews)
+        eventBus.$emit('review-submitted', productReview)
       } else {
-        if (!this.name) this.error.push('Введи имя босоножка =)')
-        if (!this.review) this.error.push('Введите отзыв!')
-        if (!this.rating) this.error.push('Рейтинг, ну как же без него :)')
+        if (!this.name) this.errors.push('Введи имя =)')
+        if (!this.review) this.errors.push('Введите отзыв!')
+        if (!this.rating) this.errors.push('Рейтинг, ну как же без него :)')
       }
       this.name = null
       this.review = null
@@ -211,18 +240,14 @@ var app = new Vue({
   methods: {
     updateCart(idCart) {
       this.cart.push(idCart)
-      console.log(this.cart)
     },
     downgradeCart(idCart) {
       for (let i = this.cart.length - 1; i >= 0; i--) {
         if (this.cart[i] === idCart) {
-           this.cart.splice(i, 1);
-           return
+          this.cart.splice(i, 1);
+          return
         }
       }
     }
   },
-  computed: {
-
-  }
 });
